@@ -1,0 +1,31 @@
+name: deploy
+
+# Push to main → build the static site and deploy to Cloudflare Pages (project "yarn").
+# "Commit = live." The deploy step stays skipped until CLOUDFLARE_API_TOKEN exists as a
+# repo (or org) secret — the build still runs as CI validation. See docs/writing-a-post.md.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      HAS_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to Cloudflare Pages
+        if: ${{ env.HAS_CF_TOKEN == 'true' }}
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy dist --project-name=yarn --branch=main
