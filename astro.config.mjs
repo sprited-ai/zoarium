@@ -2,5 +2,5 @@ import { defineConfig } from 'astro/config';
 
 export default defineConfig({
   output: 'static',
-  site: 'https://zoarium.sprited.ai',
+  site: 'https://yarn.sprited.ai',
 });
